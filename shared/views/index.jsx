@@ -13,6 +13,8 @@ var AppView = {
 
         <title>Flummox Demo</title>
 
+        <h2>fsadf</h2>
+
         <RouteHandler {...this.props} />
 
         <script type="application/javascript" src="/bundle.js"></script>

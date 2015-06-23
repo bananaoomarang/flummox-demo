@@ -1,41 +1,29 @@
+var fs            = require('fs');
+var path          = require('path');
 var express       = require('express');
-var browserify    = require('browserify-middleware');
 var React         = require('react');
 var Router        = require('react-router');
-var babelify      = require('babelify');
 var routes        = require('./shared/routes');
 var AppFlux       = require('./shared/AppFlux');
 var FluxComponent = require('flummox/component');
 var app           = express();
 
-const BROWSERIFY_OPTS = {
-  debug:      true,
-  extensions: ['.jsx', '.js'],
-  transform:  [babelify],
-  precompile: true
-};
+const BUNDLE_PATH = path.join(__dirname, 'dist', 'bundle.js');
 
-app.use('/bundle.js', browserify('./client/index.jsx', BROWSERIFY_OPTS));
+app.get('/bundle.js', function (req, res) {
+  fs.createReadStream(BUNDLE_PATH).pipe(res);
+});
 
 app.use(function (req, res, next) {
   const flux = new AppFlux();
 
-  let path = req.path;
+  const routePath = req.path;
 
-  Router.run(routes, path, function (Handler, state) {
+  Router.run(routes, routePath, function (Handler, state) {
     var View = (
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <title>Flummox Demo</title>
-        </head>
-
-        <body>
-          <FluxComponent flux={flux}>
-            <Handler {...state} />
-          </FluxComponent>
-        </body>
-      </html>
+      <FluxComponent flux={flux}>
+        <Handler {...state} />
+      </FluxComponent>
     );
 
     var html = React.renderToString(View);
